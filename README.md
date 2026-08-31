@@ -51,3 +51,26 @@ interface GigabitEthernet0/1
  switchport mode trunk
  no shutdown
 exit
+
+### 2. Cisco Router (2911) Sub-Interface Configuration
+
+enable
+configure terminal
+
+! Enable Physical Interface
+interface GigabitEthernet0/0
+ no shutdown
+exit
+
+! Sub-interface for VLAN 10 (HR)
+interface GigabitEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.0
+ description Default Gateway for HR
+
+! Sub-interface for VLAN 20 (IT)
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.1 255.255.255.0
+ description Default Gateway for IT
+exit
