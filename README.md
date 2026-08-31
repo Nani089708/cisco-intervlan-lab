@@ -1,76 +1,54 @@
-# cisco-intervlan-lab
-# Inter-VLAN Routing (Router-on-a-Stick) Lab
+<div align="center">
 
-## 📌 Project Overview
-This lab demonstrates the implementation of **Router-on-a-Stick (ROAS)** architecture using Cisco IOS. It enables communication between two isolated VLANs (HR & IT) across a single physical trunk link using 802.1Q encapsulation.
+# 🛡️ Enterprise Edge Security Lab: FortiGate + Cisco Core
 
----
+![Cisco](https://img.shields.io/badge/Cisco-L2%2FL3%20Switch-1BA0D7?style=for-the-badge&logo=cisco&logoColor=white)
+![Fortinet](https://img.shields.io/badge/Fortinet-FortiGate%20VM-EE3124?style=for-the-badge&logo=fortinet&logoColor=white)
+![Topology](https://img.shields.io/badge/Architecture-Router--on--a--Stick-orange?style=for-the-badge)
+![Status](https://img.shields.io/badge/Lab%20Status-Verified%20%26%20Tested-success?style=for-the-badge)
 
-## 🖼️ Network Topology
-![Topology Diagram](topology.png)
+<p align="center">
+  <b>Production-grade network topology integrating a FortiGate Next-Generation Firewall with Cisco Layer 2/3 Switching for secure Inter-VLAN routing, perimeter security, and NAT/PAT inspection.</b>
+</p>
 
----
-
-## 📊 IP Addressing Table
-
-| Device | Interface | IP Address | Subnet Mask | Default Gateway | Purpose |
-|---|---|---|---|---|---|
-| **Router0** | G0/0.10 | 192.168.10.1 | 255.255.255.0 | N/A | VLAN 10 Gateway |
-| **Router0** | G0/0.20 | 192.168.20.1 | 255.255.255.0 | N/A | VLAN 20 Gateway |
-| **PC-HR** | FastEth0 | 192.168.10.10 | 255.255.255.0 | 192.168.10.1 | HR Host |
-| **PC-IT** | FastEth0 | 192.168.20.10 | 255.255.255.0 | 192.168.20.1 | IT Host |
+</div>
 
 ---
 
-## ⚙️ Configuration Snippets
+## 📐 Network Architecture Diagram
 
-### 1. Cisco Switch (2960) Configuration
-```cisco
-! Create VLANs
-enable
-configure terminal
-vlan 10
- name HR_Dept
-vlan 20
- name IT_Dept
-exit
+```mermaid
+flowchart TD
+    subgraph WAN [External Network]
+        Internet((Internet / ISP))
+    end
 
-! Assign Access Ports to VLANs
-interface FastEthernet0/1
- switchport mode access
- switchport access vlan 10
- no shutdown
+    subgraph Perimeter [Perimeter Security]
+        FGT[FortiGate Firewall\nport1: WAN (DHCP)\nport2: Trunk to LAN]
+    end
 
-interface FastEthernet0/2
- switchport mode access
- switchport access vlan 20
- no shutdown
+    subgraph Core [Internal Distribution]
+        SW[Cisco Catalyst 2960\nGi0/1: 802.1Q Trunk]
+    end
 
-! Configure 802.1Q Trunk Port to Router
-interface GigabitEthernet0/1
- switchport mode trunk
- no shutdown
-exit
+    subgraph LAN [Segmented Subnets]
+        HR[HR Dept\nVLAN 10\n192.168.10.0/24]
+        IT[IT Dept\nVLAN 20\n192.168.20.0/24]
+        DMZ[Servers / DMZ\nVLAN 30\n192.168.30.0/24]
+    end
 
-### 2. Cisco Router (2911) Sub-Interface Configuration
+    Internet <-->|Static Default Route / NAT| FGT
+    FGT <-->|VLAN Sub-interfaces 10, 20, 30| SW
+    SW --- HR
+    SW --- IT
+    SW --- DMZ
 
-enable
-configure terminal
+    classDef fgtStyle fill:#ee3124,stroke:#333,stroke-width:2px,color:#fff;
+    classDef ciscoStyle fill:#005073,stroke:#333,stroke-width:2px,color:#fff;
+    classDef lanStyle fill:#71c7ec,stroke:#333,stroke-width:1px;
+    classDef wanStyle fill:#fdb813,stroke:#333,stroke-width:1px;
 
-! Enable Physical Interface
-interface GigabitEthernet0/0
- no shutdown
-exit
-
-! Sub-interface for VLAN 10 (HR)
-interface GigabitEthernet0/0.10
- encapsulation dot1Q 10
- ip address 192.168.10.1 255.255.255.0
- description Default Gateway for HR
-
-! Sub-interface for VLAN 20 (IT)
-interface GigabitEthernet0/0.20
- encapsulation dot1Q 20
- ip address 192.168.20.1 255.255.255.0
- description Default Gateway for IT
-exit
+    class FGT fgtStyle;
+    class SW ciscoStyle;
+    class HR,IT,DMZ lanStyle;
+    class Internet wanStyle;
